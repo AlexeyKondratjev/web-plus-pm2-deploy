@@ -1,14 +1,24 @@
 import { Router } from 'express';
 import {
-  getUser, updateUserInfo, updateUserAvatar, getCurrentUser,
+  getUser,
+  getUserInfo,
+  getUsers,
+  patchUserAvatar,
+  patchUserProfile
 } from '../controllers/users';
-import { validateObjId, validateAvatar, validateProfile } from '../middlewares/validatons';
+import {
+  validationGettingUserById,
+  validationPatchingUserAvatar,
+  validationPatchingUserProfile
+} from '../validation/users';
 
-const router = Router();
+const usersRouter = Router();
 
-router.get('/me', getCurrentUser);
-router.get('/:id', validateObjId, getUser);
-router.patch('/me/avatar', validateAvatar, updateUserAvatar);
-router.patch('/me', validateProfile, updateUserInfo);
+usersRouter.get('/', getUsers);
+usersRouter.get('/me', getUserInfo);
+usersRouter.get('/:userId', validationGettingUserById, getUser);
 
-export default router;
+usersRouter.patch('/me', validationPatchingUserProfile, patchUserProfile);
+usersRouter.patch('/me/avatar', validationPatchingUserAvatar, patchUserAvatar);
+
+export default usersRouter;

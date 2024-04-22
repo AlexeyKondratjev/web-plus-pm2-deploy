@@ -1,6 +1,14 @@
-@import url('./__content/page__content.css');
-@import url('./__section/page__section.css');
-
 .page {
-  background: #000;
+  margin: 0 auto;
+  color: #fff;
+  background-color: #000;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  max-width: 1280px;
+  /*Включим сглаживание, подгонку размеров текста в Firefox и браузерах на движке Webkit...*/
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  -moz-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }

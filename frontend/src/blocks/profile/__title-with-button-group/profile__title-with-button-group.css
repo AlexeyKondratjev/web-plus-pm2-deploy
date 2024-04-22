@@ -1,0 +1,11 @@
+.profile__title-with-button-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 575px) {
+  .profile__title-with-button-group {
+    padding-right: 9px;
+  }
+}

@@ -1,86 +1,65 @@
-import mongoose, { Model, Document, HydratedDocument } from 'mongoose';
+import mongoose from 'mongoose';
 import validator from 'validator';
-import bcrypt from 'bcryptjs'; // импортируем bcrypt
-import { urlRegExp } from '../middlewares/validatons';
-import UnauthorizedError from '../errors/unauthorized-error';
+import bcrypt from 'bcryptjs';
+import { IUser } from '../utils/types';
+import { AuthError } from '../errors/AuthError';
+import { ErrorPatternMessages } from '../utils/enums';
 
-interface IUser extends Document {
-  name: string;
-  about: string;
-  avatar: string;
-  email: string;
-  password: string;
-}
-
-interface IUserMethods {
-  toJSON(): string;
-}
-
-interface IUserModel extends Model<IUser, {}, IUserMethods> {
+interface UserModel extends mongoose.Model<IUser> {
   findUserByCredentials: (email: string, password: string) =>
-                             Promise<HydratedDocument<IUser, IUserMethods>>;
+    Promise<mongoose.Document<unknown, any, IUser>>
 }
 
-const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>({
+const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
-    default: 'Жак-Ив Кусто',
-    minlength: [2, 'Минимальная длина поля "name" - 2'],
-    maxlength: [30, 'Максимальная длина поля "name" - 30'],
+    minlength: [2, 'Минимальная длина 2 символа.'],
+    maxlength: [30, 'Максимальная длина 30 символов.'],
+    required: false,
+    default: 'Жак-Ив Кусто'
   },
   about: {
     type: String,
-    default: 'Исследователь',
-    minlength: [2, 'Минимальная длина поля "about" - 2'],
-    maxlength: [30, 'Максимальная длина поля "about" - 30'],
+    minlength: [2, 'Минимальная длина 2 символа.'],
+    maxlength: [200, 'Максимальная длина 200 символов.'],
+    required: false,
+    default: 'Исследователь'
   },
   avatar: {
     type: String,
-    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
-    validate: {
-      validator: (v: string) => urlRegExp.test(v),
-      message: 'Поле "avatar" должно быть валидным url-адресом.',
-    },
+    required: false,
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'
   },
-  // в схеме пользователя есть обязательные email и password
   email: {
     type: String,
-    required: [true, 'Поле "email" должно быть заполнено'],
-    unique: true, // поле email уникально (есть опция unique: true);
+    required: true,
+    unique: true,
     validate: {
       validator: (v: string) => validator.isEmail(v),
-      message: 'Поле "email" должно быть валидным email-адресом',
-    },
+      message: 'Неправильный формат почты'
+    }
   },
-  // поле password не имеет ограничения на длину, т.к. пароль хранится в виде хэша
   password: {
     type: String,
-    required: [true, 'Поле "password" должно быть заполнено'],
-    select: false,
-  },
-}, { versionKey: false });
+    required: true,
+    select: false
+  }
+});
 
-userSchema.statics
-  .findUserByCredentials = function findByCredentials(email: string, password: string) {
-    return this.findOne({ email }).select('+password')
-      .then((user) => {
-        if (!user) {
-          return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
-        }
-        return bcrypt.compare(password, user.password)
-          .then((matched) => {
-            if (!matched) {
-              return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
-            }
-            return user;
-          });
-      });
-  };
+userSchema.static('findUserByCredentials', async function findUserByCredentials(email: string, password: string) {
+  const user = await this.findOne({ email }).select('+password');
 
-userSchema.methods.toJSON = function toJSON() {
-  const obj = this.toObject();
-  delete obj.password;
-  return obj;
-};
+  if (!user) {
+    return Promise.reject(new AuthError(ErrorPatternMessages.AUTH_ERROR));
+  }
 
-export default mongoose.model<IUser, IUserModel>('user', userSchema);
+  const matched = await bcrypt.compare(password, user.password);
+
+  if (!matched) {
+    return Promise.reject(new AuthError(ErrorPatternMessages.AUTH_ERROR));
+  }
+
+  return user;
+});
+
+export default mongoose.model<IUser, UserModel>('user', userSchema);
