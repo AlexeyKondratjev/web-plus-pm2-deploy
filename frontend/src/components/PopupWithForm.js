@@ -1,48 +1,26 @@
-import Popup from "./Popup";
+import React from 'react';
 
-export default class PopupWithForm extends Popup {
-  constructor(popupSelector, handleFormSubmit, handleFormPrefill) {
-    super(popupSelector);
-    this._handleFormSubmit = handleFormSubmit;
-    this._handleFormPrefill = handleFormPrefill;
-    this._inputList = this._popup.querySelectorAll('.form__item');
-    this._form = this._popup.querySelector('.popup__form');
-    this._formValues = {};
-    // Кроме селектора попапа принимает в конструктор колбэк сабмита формы. В этом колбэке содержится метод класса Api.
-  }
-
-  _getInputValues() {
-    //собирает данные всех полей формы.
-    this._inputList.forEach(input => this._formValues[input.name] = input.value);
-    return this._formValues;
-  }
-
-  setInputValues(data) {
-    // Вставляет данные в поля формы при открытии попапа
-
-    this._inputList.forEach( (input) => {
-      input.value = data[input.name];
-    } )
-  }
-
-  setEventListeners() {
-    // Перезаписывает родительский метод setEventListeners. Метод setEventListeners класса PopupWithForm должен не только добавлять обработчик клика иконке закрытия, но и добавлять обработчик сабмита формы.
-    super.setEventListeners();
-    this._popup.addEventListener('submit', this.submitHandler.bind(this));
-  }
-
-  close() {
-    // Перезаписывает родительский метод close, так как при закрытии попапа форма должна ещё и сбрасываться.
-    super.close();
-    this._form.reset();
-  }
-
-  submitHandler(evt) {
-    const inputsValue = this._getInputValues();
-    this._handleFormSubmit(evt, inputsValue);
-  }
-
-  prefillForm() {
-    this._handleFormPrefill();
-  }
+function PopupWithForm({
+  title,
+  name,
+  isOpen,
+  buttonText = 'Сохранить',
+  onSubmit,
+  onClose,
+  children,
+}) {
+  return (
+    <div className={`popup popup_type_${name} ${isOpen ? 'popup_is-opened' : ''}`}>
+      <div className="popup__content">
+        <form className="popup__form" name={name} noValidate onSubmit={onSubmit}>
+          <button type="button" className="popup__close" onClick={onClose}></button>
+          <h3 className="popup__title">{title}</h3>
+          {children}
+          <button type="submit" className="button popup__button">{buttonText}</button>
+        </form>
+      </div>
+    </div>
+  );
 }
+
+export default PopupWithForm;

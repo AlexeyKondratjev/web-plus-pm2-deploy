@@ -1,9 +1,9 @@
 .card__image {
-  max-width: 282px;
-  max-height: 282px;
   min-height: 282px;
-  width: 100%;
-  object-fit: cover;
-  margin-bottom: 25px;
+  -webkit-background-size: cover;
+  background-size: cover;
+}
+
+.card__image:hover {
   cursor: pointer;
 }

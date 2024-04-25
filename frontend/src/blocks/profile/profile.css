@@ -1,17 +1,23 @@
+@import url('./__description/profile__description.css');
+@import url('./__add-button/profile__add-button.css');
+@import url('./__edit-button/profile__edit-button.css');
+@import url('./__info/profile__info.css');
+@import url('./__title/profile__title.css');
+@import url('./__image/profile__image.css');
+
 .profile {
+  font-family: 'Inter', Arial, sans-serif;
+  color: #fff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin: 0 auto;
-  max-width: 880px;
-  max-height: 120px;
-  padding: 40px 19px 0;
+  padding: 36px 0;
+  /*Если подгонять под ПЭПЭ, то тут padding: 40px 0; Проявите лоялити*/
 }
 
-@media (max-width: 575px) {
+@media screen and (max-width: 480px) {
   .profile {
+    padding: 43px 0;
     flex-direction: column;
-    max-height: 286px;
-    padding-top: 42px;
+    text-align: center;
   }
 }

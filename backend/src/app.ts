@@ -1,58 +1,26 @@
-import express, { NextFunction, Request, Response } from 'express';
+import 'dotenv/config';
+
+import express from 'express';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import { errors } from 'celebrate';
-import { DB_PATH } from './constants/constants';
-import router from './routes';
-import auth from './middleware/auth';
-import { errorHandler } from './middleware/errorHandler';
-import { NotFoundError } from './errors/NotFoundError';
-import { ErrorPatternMessages } from './utils/enums';
-import { createUser, login } from './controllers/users';
-import { validationLogin, validationUserCreating } from './validation/users';
-import { errorLogger, requestLogger } from './middleware/logger';
+// import cors from 'cors';
+import errorHandler from './middlewares/error-handler';
+import { DB_ADDRESS } from './config';
+import routes from './routes';
 
 const { PORT = 3000 } = process.env;
-
 const app = express();
+mongoose.connect(DB_ADDRESS);
 
+// Только для локальных тестов. Не используйте это в продакшене
+// app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(requestLogger);
-
-app.post('/signin', validationLogin, login);
-app.post('/signup', validationUserCreating, createUser);
-
-app.use(auth);
-
-app.use(router);
-app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new NotFoundError(ErrorPatternMessages.NOT_FOUND_BASIC));
-});
-
-app.use(errorLogger);
-
+app.use(cookieParser());
+app.use(routes);
 app.use(errors());
-
 app.use(errorHandler);
 
-const initDBConnect = async () => {
-  try {
-    mongoose.set('strictQuery', false);
-
-    await mongoose.connect(DB_PATH);
-    console.log('Соединение с базой данных установлено!');
-
-    app.listen(PORT, () => {
-      console.log(`App listening on port ${PORT}.`);
-    });
-  } catch (err) {
-    if (err instanceof mongoose.Error.MongooseServerSelectionError) {
-      console.log('Возникла ошибка подключения к базе данных!');
-    } else {
-      console.log('Возникла ошибка запуска сервера: ', err);
-    }
-  }
-};
-
-initDBConnect();
+// eslint-disable-next-line no-console
+app.listen(PORT, () => console.log('ok'));
